@@ -1,8 +1,13 @@
 import React from "react";
-import AuthService from "../../services/Auth/auth.service";
+import { Navigate } from 'react-router-dom';
+import { useSelector } from "react-redux";
 
 const Profile = () => {
-  const currentUser = AuthService.getCurrentUser();
+  const { user: currentUser } = useSelector((state) => state.auth);
+
+  if (!currentUser) {
+    return <Navigate to="/login" />;
+  }
 
   return (
     <div className="container">

@@ -1,10 +1,12 @@
 import React, { useState, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 import Form from "react-validation/build/form";
 import Input from "react-validation/build/input";
 import CheckButton from "react-validation/build/button";
 import { isEmail } from "validator";
 
-import AuthService from "../../services/Auth/auth.service";
+import { register } from "../../actions/auth";
 
 const required = (value) => {
   if (!value) {
@@ -54,7 +56,9 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [successful, setSuccessful] = useState(false);
-  const [message, setMessage] = useState("");
+
+  const { message } = useSelector(state => state.message);
+  const dispatch = useDispatch();
 
   const onChangeUsername = (e) => {
     const username = e.target.value;
@@ -74,29 +78,18 @@ const Register = () => {
   const handleRegister = (e) => {
     e.preventDefault();
 
-    setMessage("");
     setSuccessful(false);
 
     form.current.validateAll();
 
     if (checkBtn.current.context._errors.length === 0) {
-      AuthService.register(username, email, password).then(
-        (response) => {
-          setMessage(response.data.message);
+      dispatch(register(username, email, password))
+        .then(() => {
           setSuccessful(true);
-        },
-        (error) => {
-          const resMessage =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-
-          setMessage(resMessage);
+        })
+        .catch(() => {
           setSuccessful(false);
-        }
-      );
+        });
     }
   };
 
@@ -156,10 +149,7 @@ const Register = () => {
 
           {message && (
             <div className="form-group">
-              <div
-                className={ successful ? "alert alert-success" : "alert alert-danger" }
-                role="alert"
-              >
+              <div className={ successful ? "alert alert-success" : "alert alert-danger" } role="alert">
                 {message}
               </div>
             </div>
